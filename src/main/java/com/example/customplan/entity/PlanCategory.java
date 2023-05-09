@@ -25,7 +25,7 @@ public class PlanCategory {
     @Column(name = "created_date", updatable = false)
     @CreationTimestamp
     private LocalDate createdDate;
-    @Column(name = "updated_by", insertable = false)
+    @Column(name = "updated_date", insertable = false)
     @UpdateTimestamp
     private  LocalDate updatedDate;
 }

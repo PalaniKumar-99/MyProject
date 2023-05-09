@@ -1,6 +1,8 @@
 package com.example.customplan.controller;
 
+import com.example.customplan.constants.AppConstants;
 import com.example.customplan.entity.Plan;
+import com.example.customplan.properties.AppProperties;
 import com.example.customplan.service.PlanService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -13,9 +15,15 @@ import java.util.Map;
 @RestController
 public class PlanController {
 
-    @Autowired
     private PlanService planService;
+    private AppProperties appProperties;
+    private Map<String, String> messages;
 
+    public PlanController(PlanService planService, AppProperties appProperties) {
+        super();
+        this.planService = planService;
+        this.messages = appProperties.getMessages();
+    }
     @GetMapping("/plancategories")
     public ResponseEntity<Map<Integer, String>> getPlanCategories() {
         Map<Integer, String> planCategories = planService.getPlanCategories();
@@ -25,12 +33,14 @@ public class PlanController {
 
     @PostMapping("/saveplan")
     public ResponseEntity<String> savePlans(@RequestBody Plan plan) {
+        String responseMessage = AppConstants.EMPTY_STR;
         boolean savedPlan = planService.savePlan(plan);
         if(savedPlan) {
-            return  new ResponseEntity<>("Plan saved", HttpStatus.CREATED);
+            responseMessage = messages.get(AppConstants.PLAN_SAVE_SUCC);
         } else {
-            return new ResponseEntity<>("Plan saved failed", HttpStatus.NOT_ACCEPTABLE);
+            responseMessage = messages.get(AppConstants.PLAN_SAVE_FAIL);
         }
+        return  new ResponseEntity<>(responseMessage, HttpStatus.CREATED);
     }
 
     @GetMapping("/plans")
@@ -46,31 +56,38 @@ public class PlanController {
     @PutMapping("/updateplan")
     public ResponseEntity<String> updatePlan(@RequestBody Plan plan) {
         boolean planUpdated = planService.updatePlan(plan);
+        String responseMsg = AppConstants.EMPTY_STR;
         if(planUpdated) {
-            return new ResponseEntity<>("Plan Updated successfully", HttpStatus.OK);
+            responseMsg = messages.get(AppConstants.PLAN_UPDATE_SUCC);
         }
         else {
-            return new ResponseEntity<>("Plan not found", HttpStatus.NOT_FOUND);
+            responseMsg = messages.get(AppConstants.PLAN_UPDATE_FAIL);
         }
+        return new ResponseEntity<>(responseMsg, HttpStatus.OK);
     }
 
     @DeleteMapping("/deleteplan/{planId}")
     public ResponseEntity<String> deletePlanById(@PathVariable Integer planId) {
         boolean deletedPlan = planService.deletePlanById(planId);
+        String responseMsg = AppConstants.EMPTY_STR;
         if(deletedPlan) {
-            return  new ResponseEntity<>("Plan deleted with id :"+planId, HttpStatus.OK);
+            responseMsg = messages.get(AppConstants.PLAN_DELETE_SUCC);
         } else {
-            return  new ResponseEntity<>("No plan found exist with the planid: "+planId, HttpStatus.NOT_FOUND);
+            responseMsg = messages.get(AppConstants.PLAN_DELETE_FAIL);
         }
+        return  new ResponseEntity<>(responseMsg, HttpStatus.NOT_FOUND);
+
     }
 
     @PutMapping("/statuschange/{id}/{status}")
     public ResponseEntity<String> statusChange(@PathVariable Integer id, @PathVariable String status) {
         boolean statusChanged = planService.planStatusChange(id, status);
+        String responseMsg = AppConstants.EMPTY_STR;
         if(statusChanged) {
-            return  new ResponseEntity<>("Plan status changed with planid: "+id, HttpStatus.OK);
+            responseMsg = messages.get(AppConstants.PLAN_STATUS_CHANGE_SUCC);
         } else {
-            return new ResponseEntity<>("Plan not found with planid: "+id, HttpStatus.NOT_FOUND);
+            responseMsg = messages.get(AppConstants.PLAN_STATUS_CHANGE_FAIL);
         }
+        return new ResponseEntity<>(responseMsg, HttpStatus.NOT_FOUND);
     }
 }
